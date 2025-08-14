@@ -1,0 +1,26 @@
+# Environnement virtuel Python
+venv/
+.venv/
+
+# Fichiers de configuration sensibles
+.env
+*.env
+
+# Fichiers compilés Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# Configurations locales
+*.sqlite3
+.DS_Store
+.idea/
+.vscode/
+
+# Cache et fichiers temporaires
+*.pytest_cache/
+.mypy_cache/
