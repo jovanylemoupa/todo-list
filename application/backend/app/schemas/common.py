@@ -18,11 +18,11 @@ class MessageResponse(BaseModel):
     """Schéma pour les messages de retour simples"""
     message: str
     success: bool = True
-    timestamp: datetime = datetime.now()
+    # SUPPRIMÉ: timestamp pour éviter problème sérialisation
 
 class ErrorResponse(BaseModel):
     """Schéma pour les réponses d'erreur"""
     error: str
     detail: str
     code: Optional[str] = None
-    timestamp: datetime = datetime.now()
+    # SUPPRIMÉ: timestamp pour éviter problème sérialisation

@@ -17,7 +17,7 @@ class CategoryBase(BaseModel):
     )
     color: str = Field(
         default="#007bff", 
-        regex=r"^#[0-9A-Fa-f]{6}$", 
+        pattern=r"^#[0-9A-Fa-f]{6}$",  # CHANGÉ: regex → pattern
         description="Couleur en format hexadécimal"
     )
 
@@ -35,7 +35,7 @@ class CategoryUpdate(BaseModel):
     """Schéma pour la mise à jour d'une catégorie"""
     name: Optional[str] = Field(None, min_length=1, max_length=50)
     description: Optional[str] = Field(None, max_length=200)
-    color: Optional[str] = Field(None, regex=r"^#[0-9A-Fa-f]{6}$")
+    color: Optional[str] = Field(None, pattern=r"^#[0-9A-Fa-f]{6}$")  # CHANGÉ: regex → pattern
 
     @validator('name')
     def validate_name(cls, v):

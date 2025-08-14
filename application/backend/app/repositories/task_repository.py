@@ -1,7 +1,7 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, desc, asc, func
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone  # AJOUTÉ: timezone
 
 from .base import BaseRepository
 from app.models.task import Task, TaskPriority, TaskStatus
@@ -76,7 +76,8 @@ class TaskRepository(BaseRepository[Task]):
 
     def get_overdue_tasks(self, db: Session) -> List[Task]:
         """Récupérer les tâches en retard"""
-        now = datetime.now()
+        # CORRECTION: Utiliser datetime avec timezone
+        now = datetime.now(timezone.utc)
         return db.query(Task).options(joinedload(Task.category)).filter(
             and_(
                 Task.due_date < now,
@@ -99,7 +100,7 @@ class TaskRepository(BaseRepository[Task]):
         task = self.get_by_id(db, task_id)
         if task and task.status != TaskStatus.TERMINEE:
             task.status = TaskStatus.TERMINEE
-            task.completed_at = datetime.now()
+            task.completed_at = datetime.now(timezone.utc)  # CORRECTION: avec timezone
             task.is_urgent = False
             db.commit()
             db.refresh(task)
@@ -141,7 +142,7 @@ class TaskRepository(BaseRepository[Task]):
         overdue_count = len(self.get_overdue_tasks(db))
         
         # Tâches terminées aujourd'hui
-        today = datetime.now().date()
+        today = datetime.now(timezone.utc).date()  # CORRECTION: avec timezone
         completed_today = db.query(Task).filter(
             and_(
                 Task.status == TaskStatus.TERMINEE,
@@ -165,7 +166,8 @@ class TaskRepository(BaseRepository[Task]):
 
     def update_all_urgency_flags(self, db: Session):
         """Mettre à jour tous les flags d'urgence (tâche périodique)"""
-        urgent_threshold = datetime.now() + timedelta(days=2)
+        # CORRECTION: avec timezone
+        urgent_threshold = datetime.now(timezone.utc) + timedelta(days=2)
         
         # Marquer comme urgent
         db.query(Task).filter(

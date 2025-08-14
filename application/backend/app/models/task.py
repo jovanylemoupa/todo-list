@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Text, DateTime, Enum, ForeignKey, Boolean, Integer
 from sqlalchemy.orm import relationship
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone  # AJOUTÉ: timezone
 import enum
 
 from .base import BaseModel
@@ -51,12 +51,32 @@ class Task(BaseModel):
         """Vérifie si la tâche est en retard"""
         if self.status == TaskStatus.TERMINEE:
             return False
-        return self.due_date < datetime.now()
+        
+        # CORRECTION: Utiliser datetime avec timezone
+        now = datetime.now(timezone.utc)
+        
+        # S'assurer que due_date a une timezone
+        if self.due_date.tzinfo is None:
+            # Si pas de timezone, on assume UTC
+            due_date_aware = self.due_date.replace(tzinfo=timezone.utc)
+        else:
+            due_date_aware = self.due_date
+            
+        return due_date_aware < now
     
     @property
     def days_until_due(self) -> int:
         """Nombre de jours jusqu'à l'échéance"""
-        delta = self.due_date.date() - datetime.now().date()
+        # CORRECTION: Utiliser datetime avec timezone
+        now = datetime.now(timezone.utc)
+        
+        # S'assurer que due_date a une timezone
+        if self.due_date.tzinfo is None:
+            due_date_aware = self.due_date.replace(tzinfo=timezone.utc)
+        else:
+            due_date_aware = self.due_date
+            
+        delta = due_date_aware.date() - now.date()
         return delta.days
     
     def update_urgency(self):

@@ -124,12 +124,12 @@ class TaskSort(BaseModel):
     """Schéma pour le tri des tâches"""
     sort_by: str = Field(
         default="due_date",
-        regex="^(title|priority|due_date|created_at|status|position)$",
+        pattern=r"^(title|priority|due_date|created_at|status|position)$",  # CHANGÉ: regex → pattern
         description="Champ de tri"
     )
     sort_order: str = Field(
         default="asc", 
-        regex="^(asc|desc)$",
+        pattern=r"^(asc|desc)$",  # CHANGÉ: regex → pattern
         description="Ordre de tri (asc/desc)"
     )
 
