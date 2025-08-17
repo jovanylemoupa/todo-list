@@ -1,11 +1,21 @@
-<script setup lang="ts"></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <div id="app">
+    <AppLayout />
+    <ToastContainer />
+  </div>
 </template>
 
-<style scoped></style>
+<script setup lang="ts">
+import AppLayout from '@/components/layout/AppLayout.vue'
+import ToastContainer from '@/components/ui/ToastContainer.vue'
+</script>
+
+<style>
+#app {
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  background: var(--color-gray-50);
+}
+</style>
