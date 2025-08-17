@@ -1,4 +1,4 @@
-import apiService from './api'
+import apiService from './api.service'
 import type { Category, CreateCategoryRequest } from '@/types/category'
 
 export const categoriesService = {
