@@ -93,9 +93,15 @@ class TaskUpdate(BaseModel):
             raise ValueError('La date d\'échéance doit être dans le futur')
         return v
 
-class TaskResponse(TaskBase):
-    """Schéma complet pour les réponses contenant une tâche"""
+# ✅ SOLUTION : TaskResponse n'hérite PAS de TaskBase
+class TaskResponse(BaseModel):
+    """Schéma complet pour les réponses contenant une tâche - SANS validation sur due_date"""
     id: int
+    title: str
+    description: Optional[str] = None
+    priority: TaskPriority
+    due_date: datetime  # ✅ PAS de validation ici (lecture seule)
+    category_id: int
     status: TaskStatus
     created_at: datetime
     updated_at: Optional[datetime] = None
@@ -116,20 +122,27 @@ class TaskFilter(BaseModel):
     category_id: Optional[int] = Field(None, gt=0)
     priority: Optional[TaskPriority] = None
     status: Optional[TaskStatus] = None
-    search: Optional[str] = Field(None, min_length=2, max_length=100, description="Recherche textuelle")
+    search: Optional[str] = Field(None, description="Recherche textuelle")  # ✅ Supprimé min_length
     is_urgent: Optional[bool] = None
     is_overdue: Optional[bool] = None
+
+    @validator('search')
+    def validate_search(cls, v):
+        """Valider le champ de recherche"""
+        if v is not None and len(v.strip()) == 0:
+            return None  # Convertir string vide en None
+        return v
 
 class TaskSort(BaseModel):
     """Schéma pour le tri des tâches"""
     sort_by: str = Field(
         default="due_date",
-        pattern=r"^(title|priority|due_date|created_at|status|position)$",  # CHANGÉ: regex → pattern
+        pattern=r"^(title|priority|due_date|created_at|status|position)$",
         description="Champ de tri"
     )
     sort_order: str = Field(
         default="asc", 
-        pattern=r"^(asc|desc)$",  # CHANGÉ: regex → pattern
+        pattern=r"^(asc|desc)$",
         description="Ordre de tri (asc/desc)"
     )
 
