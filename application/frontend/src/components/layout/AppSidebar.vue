@@ -11,13 +11,8 @@
           <span class="nav-icon">📝</span>
           <span class="nav-text">Tâches</span>
         </router-link>
-        
-        <router-link to="/about" class="nav-item">
-          <span class="nav-icon">ℹ️</span>
-          <span class="nav-text">À propos</span>
-        </router-link>
 
-        <router-link to="/categories" class="nav-item">
+         <router-link to="/categories" class="nav-item">
           <span class="nav-icon">📂</span>
           <span class="nav-text">Catégorie</span>
         </router-link>
@@ -55,20 +50,28 @@ const urgentCount = computed(() => tasksStore.urgentTasks.length)
   width: 250px;
   background: white;
   border-right: 1px solid var(--color-gray-200);
+  
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 10;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 80px);
 }
 
 .sidebar-content {
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
 .sidebar-nav {
   flex: 1;
   padding: 1rem 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .nav-item {
@@ -80,6 +83,7 @@ const urgentCount = computed(() => tasksStore.urgentTasks.length)
   text-decoration: none;
   transition: all var(--transition-fast);
   border-left: 3px solid transparent;
+  flex-shrink: 0;
 }
 
 .nav-item:hover {
@@ -108,6 +112,7 @@ const urgentCount = computed(() => tasksStore.urgentTasks.length)
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--color-gray-200);
   background: var(--color-gray-50);
+  flex-shrink: 0;
 }
 
 .sidebar-stats {
@@ -141,6 +146,23 @@ const urgentCount = computed(() => tasksStore.urgentTasks.length)
   background: rgba(239, 68, 68, 0.1);
   padding: 0.125rem 0.5rem;
   border-radius: 9999px;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--color-gray-300);
+  border-radius: 2px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-400);
 }
 
 @media (max-width: 768px) {

@@ -101,7 +101,7 @@ const colorOptions = [
   { name: 'Violet', value: '#8b5cf6' },
   { name: 'Rose', value: '#ec4899' },
   { name: 'Cyan', value: '#06b6d4' },
-  { name: 'Indigo', value: '#6366f1' },
+  { name: 'Indigo', value: '#4f46e5' },
   { name: 'Gris', value: '#6b7280' },
   { name: 'Noir', value: '#374151' }
 ]
@@ -131,7 +131,6 @@ const handleSubmit = async () => {
   }
 }
 
-// Initialize form with category data if editing
 onMounted(() => {
   if (props.category) {
     form.name = props.category.name

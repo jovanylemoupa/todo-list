@@ -13,6 +13,10 @@
         <TaskSearch
           v-model="searchQuery"
           @search="handleSearch"
+          @clear="handleClearSearch"
+          :loading="loading"
+          :is-searching="isSearching"
+          placeholder="Rechercher dans les tâches..."
         />
       </div>
     </div>
@@ -23,7 +27,7 @@
       
       <EmptyState
         v-else-if="!loading && tasks.length === 0"
-        message="Aucune tâche trouvée"
+        :message="getEmptyMessage()"
         action-text="Créer une tâche"
         @action="openCreateModal"
       />
@@ -82,13 +86,22 @@ const currentTask = ref<Task | null>(null)
 const taskToDelete = ref<number | null>(null)
 const searchQuery = ref('')
 
-// Computed
+// ✅ Computed - Utilise les bonnes données
 const loading = computed(() => tasksStore.loading)
-const tasks = computed(() => tasksStore.filteredTasks)
+const tasks = computed(() => tasksStore.filteredTasks) // ✅ Utilise filteredTasks qui gère recherche/liste normale
+const isSearching = computed(() => tasksStore.isSearching) // ✅ Flag pour savoir si on recherche
 
 const modalTitle = computed(() =>
   currentTask.value ? 'Modifier la tâche' : 'Nouvelle tâche'
 )
+
+// ✅ Message d'état vide selon le contexte
+const getEmptyMessage = () => {
+  if (isSearching.value) {
+    return `Aucun résultat pour "${searchQuery.value}"`
+  }
+  return 'Aucune tâche trouvée'
+}
 
 // Methods
 const openCreateModal = () => {
@@ -114,7 +127,6 @@ const handleSubmit = async (taskData: any) => {
       await tasksStore.createTask(taskData)
     }
     closeModal()
-    await tasksStore.fetchTasks()
   } catch (error) {
     console.error('Erreur lors de la sauvegarde:', error)
   }
@@ -129,7 +141,6 @@ const deleteTask = async () => {
   if (taskToDelete.value) {
     try {
       await tasksStore.deleteTask(taskToDelete.value)
-      await tasksStore.fetchTasks()
     } catch (error) {
       console.error('Erreur lors de la suppression:', error)
     }
@@ -141,20 +152,25 @@ const deleteTask = async () => {
 const completeTask = async (task: Task) => {
   try {
     await tasksStore.completeTask(task.id)
-    await tasksStore.fetchTasks()
   } catch (error) {
     console.error('Erreur lors de la completion:', error)
   }
 }
 
-const handleSearch = (query: string) => {
-  tasksStore.setFilters({ search: query })
-  tasksStore.fetchTasks()
+// ✅ Recherche isolée - N'affecte que la liste des tâches
+const handleSearch = async (query: string) => {
+  searchQuery.value = query
+  await tasksStore.searchTasks(query)
+}
+
+// ✅ Clear recherche - Retour à la liste normale
+const handleClearSearch = () => {
+  searchQuery.value = ''
 }
 
 // Lifecycle
 onMounted(async () => {
-  await tasksStore.fetchTasks()
+  await tasksStore.initializeStore()
 })
 </script>
 

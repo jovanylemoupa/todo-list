@@ -69,3 +69,15 @@ export interface TasksResponse {
   total: number
   pages: number
 }
+
+export interface TaskStatistics {
+  total_count: number
+  completed_count: number
+  pending_count: number
+  in_progress_count: number
+  urgent_count: number
+  overdue_count: number
+  high_priority_count: number
+  medium_priority_count: number
+  low_priority_count: number
+}

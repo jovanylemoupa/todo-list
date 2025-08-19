@@ -5,7 +5,6 @@
 </template>
 
 <script setup lang="ts">
-// Composant minimal pour éviter les erreurs
 defineProps<{
   filters: any
 }>()

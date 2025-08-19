@@ -43,3 +43,5 @@ export function useToast() {
     clearToasts,
   }
 }
+
+export type { ToastType }

@@ -61,6 +61,10 @@ export const tasksService = {
     return await apiService.get<Task[]>('/tasks/urgent/list/')
   },
 
+  async getOverdueTasks(): Promise<Task[]> {
+    return await apiService.get<Task[]>('/tasks/overdue/list/')
+  },
+
   async getStatistics(): Promise<any> {
     return await apiService.get<any>('/tasks/statistics/')
   },

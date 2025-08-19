@@ -14,11 +14,16 @@ import { useToast } from '@/composables/useToast'
 export const useTasksStore = defineStore('tasks', () => {
   const { showToast } = useToast()
 
-  // State
   const tasks = ref<Task[]>([])
+  const searchResults = ref<Task[]>([])
+  const isSearching = ref(false)
   const currentTask = ref<Task | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
+
+  const urgentTasksData = ref<Task[]>([])
+  const overdueTasksData = ref<Task[]>([])
+  const statistics = ref<any>(null)
 
   const filters = ref<TaskFilters>({
     category_id: undefined,
@@ -39,29 +44,24 @@ export const useTasksStore = defineStore('tasks', () => {
     pages: 0,
   })
 
-  // Getters
   const filteredTasks = computed(() => {
-    let result = tasks.value
-
-    if (filters.value.search) {
-      const searchTerm = filters.value.search.toLowerCase()
-      result = result.filter(
-        (task) =>
-          task.title.toLowerCase().includes(searchTerm) ||
-          (task.description && task.description.toLowerCase().includes(searchTerm)),
-      )
+    if (isSearching.value) {
+      return searchResults.value
     }
-
-    return result
+    return tasks.value
   })
 
-  const urgentTasks = computed(() =>
-    tasks.value.filter((task) => task.is_urgent && task.status !== 'Terminée'),
-  )
+  const urgentTasks = computed(() => {
+    return urgentTasksData.value.length > 0
+      ? urgentTasksData.value
+      : tasks.value.filter((task) => task.is_urgent && task.status !== 'Terminée')
+  })
 
-  const overdueTasks = computed(() =>
-    tasks.value.filter((task) => task.is_overdue && task.status !== 'Terminée'),
-  )
+  const overdueTasks = computed(() => {
+    return overdueTasksData.value.length > 0
+      ? overdueTasksData.value
+      : tasks.value.filter((task) => task.is_overdue && task.status !== 'Terminée')
+  })
 
   const completedTasks = computed(() => tasks.value.filter((task) => task.status === 'Terminée'))
 
@@ -75,7 +75,6 @@ export const useTasksStore = defineStore('tasks', () => {
     return grouped
   })
 
-  // Actions
   const fetchTasks = async (params: Partial<TaskFilters & TaskSort & Pagination> = {}) => {
     loading.value = true
     error.value = null
@@ -88,6 +87,7 @@ export const useTasksStore = defineStore('tasks', () => {
         page: pagination.value.page,
         size: pagination.value.size,
         ...params,
+        search: undefined,
       }
 
       const response = await tasksService.getTasks(queryParams)
@@ -99,9 +99,35 @@ export const useTasksStore = defineStore('tasks', () => {
         total: response.total,
         pages: response.pages,
       }
+
+      isSearching.value = false
+      searchResults.value = []
     } catch (err: any) {
       error.value = err.message
       console.error('Erreur lors du chargement des tâches:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const searchTasks = async (query: string) => {
+    if (query.length < 2) {
+      isSearching.value = false
+      searchResults.value = []
+      filters.value.search = ''
+      await fetchTasks()
+      return
+    }
+
+    try {
+      loading.value = true
+      isSearching.value = true
+
+      const results = await tasksService.searchTasks(query)
+      searchResults.value = results
+      filters.value.search = query
+    } catch (err: any) {
+      console.error('Erreur recherche:', err)
     } finally {
       loading.value = false
     }
@@ -112,8 +138,8 @@ export const useTasksStore = defineStore('tasks', () => {
 
     try {
       const newTask = await tasksService.createTask(taskData)
-      tasks.value.unshift(newTask)
-      pagination.value.total += 1
+
+      await refreshPermanentData()
 
       showToast('Tâche créée avec succès !', 'success')
       return newTask
@@ -131,10 +157,7 @@ export const useTasksStore = defineStore('tasks', () => {
     try {
       const updatedTask = await tasksService.updateTask(id, taskData)
 
-      const index = tasks.value.findIndex((task) => task.id === id)
-      if (index !== -1) {
-        tasks.value[index] = updatedTask
-      }
+      await refreshPermanentData()
 
       showToast('Tâche mise à jour !', 'success')
       return updatedTask
@@ -152,11 +175,7 @@ export const useTasksStore = defineStore('tasks', () => {
     try {
       await tasksService.deleteTask(id)
 
-      const index = tasks.value.findIndex((task) => task.id === id)
-      if (index !== -1) {
-        tasks.value.splice(index, 1)
-        pagination.value.total -= 1
-      }
+      await refreshPermanentData()
 
       showToast('Tâche supprimée !', 'success')
     } catch (err: any) {
@@ -171,10 +190,7 @@ export const useTasksStore = defineStore('tasks', () => {
     try {
       const completedTask = await tasksService.completeTask(id)
 
-      const index = tasks.value.findIndex((task) => task.id === id)
-      if (index !== -1) {
-        tasks.value[index] = completedTask
-      }
+      await refreshPermanentData()
 
       showToast('Tâche terminée !', 'success')
       return completedTask
@@ -184,17 +200,30 @@ export const useTasksStore = defineStore('tasks', () => {
     }
   }
 
-  const setFilters = (newFilters: Partial<TaskFilters>): void => {
+  const setFilters = async (newFilters: Partial<TaskFilters>): Promise<void> => {
     filters.value = { ...filters.value, ...newFilters }
     pagination.value.page = 1
+
+    isSearching.value = false
+    searchResults.value = []
+
+    await fetchTasks()
   }
 
-  const setSort = (field: TaskSort['field'], order: TaskSort['order'] = 'asc'): void => {
+  const setSort = async (
+    field: TaskSort['field'],
+    order: TaskSort['order'] = 'asc',
+  ): Promise<void> => {
     sort.value = { field, order }
     pagination.value.page = 1
+
+    isSearching.value = false
+    searchResults.value = []
+
+    await fetchTasks()
   }
 
-  const resetFilters = (): void => {
+  const resetFilters = async (): Promise<void> => {
     filters.value = {
       category_id: undefined,
       priority: undefined,
@@ -202,6 +231,67 @@ export const useTasksStore = defineStore('tasks', () => {
       search: '',
     }
     pagination.value.page = 1
+
+    isSearching.value = false
+    searchResults.value = []
+
+    await fetchTasks()
+  }
+
+  const fetchUrgentTasks = async () => {
+    try {
+      urgentTasksData.value = await tasksService.getUrgentTasks()
+    } catch (err: any) {
+      console.error('Erreur tâches urgentes:', err)
+    }
+  }
+
+  const fetchOverdueTasks = async () => {
+    try {
+      overdueTasksData.value = await tasksService.getOverdueTasks()
+    } catch (err: any) {
+      console.error('Erreur tâches en retard:', err)
+    }
+  }
+
+  const fetchStatistics = async () => {
+    try {
+      statistics.value = await tasksService.getStatistics()
+    } catch (err: any) {
+      console.error('Erreur statistiques:', err)
+    }
+  }
+
+  const reorderTasks = async (taskIds: number[], positions: number[]): Promise<void> => {
+    try {
+      await tasksService.reorderTasks(taskIds, positions)
+      await fetchTasks()
+      showToast('Tâches réorganisées !', 'success')
+    } catch (err: any) {
+      console.error('Erreur réorganisation:', err)
+      throw err
+    }
+  }
+
+  const refreshPermanentData = async () => {
+    await Promise.all([
+      fetchTasks(), // Liste principale
+      fetchUrgentTasks(), // Tâches urgentes
+      fetchOverdueTasks(), // Tâches en retard
+      fetchStatistics(), // Statistiques
+    ])
+  }
+
+  const initializeStore = async (): Promise<void> => {
+    loading.value = true
+    try {
+      await refreshPermanentData()
+    } catch (err: any) {
+      console.error('Erreur initialisation:', err)
+      error.value = 'Erreur lors du chargement initial'
+    } finally {
+      loading.value = false
+    }
   }
 
   return {
@@ -213,6 +303,8 @@ export const useTasksStore = defineStore('tasks', () => {
     filters,
     sort,
     pagination,
+    statistics,
+    isSearching,
 
     // Getters
     filteredTasks,
@@ -230,5 +322,11 @@ export const useTasksStore = defineStore('tasks', () => {
     setFilters,
     setSort,
     resetFilters,
+    searchTasks,
+    fetchUrgentTasks,
+    fetchOverdueTasks,
+    fetchStatistics,
+    reorderTasks,
+    initializeStore,
   }
 })
