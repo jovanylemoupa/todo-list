@@ -6,13 +6,10 @@ from app.schemas.category import CategoryCreate, CategoryUpdate, CategoryRespons
 from app.core.exceptions import NotFoundException, ConflictException, BusinessLogicException
 
 class CategoryService:
-    """Service pour la logique métier des catégories"""
-    
     def __init__(self):
         self.repository = category_repository
 
     def get_all_categories(self, db: Session) -> List[CategoryResponse]:
-        """Récupérer toutes les catégories avec le nombre de tâches"""
         categories_with_counts = self.repository.get_with_task_counts(db)
         
         result = []

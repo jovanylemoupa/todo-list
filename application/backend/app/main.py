@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
     print(f"🚀 {settings.APP_NAME} v{settings.VERSION} démarré!")
     print(f"📚 Documentation disponible sur : http://{settings.HOST}:{settings.PORT}/docs")
     
-    yield  # L'application tourne ici
+    yield
     
     # Arrêt : nettoyage si nécessaire
     print("🛑 Arrêt de l'application...")
@@ -33,27 +33,6 @@ app = FastAPI(
     version=settings.VERSION,
     description="""
     ## API de gestion de tâches (Todo List)
-    
-    Cette API REST permet de gérer des tâches avec les fonctionnalités suivantes :
-    
-    ### 📋 Fonctionnalités principales
-    - **Gestion complète des tâches** (CRUD)
-    - **Catégorisation** des tâches
-    - **Validation robuste** avec Pydantic
-    - **Filtrage et tri** avancés
-    - **Pagination** automatique
-    
-    ### 🎯 Contraintes respectées
-    - Titre obligatoire (min. 3 caractères)
-    - Date d'échéance obligatoire (future)
-    - Catégorie obligatoire
-    - Validation stricte des données
-    
-    ### 🚀 Fonctionnalités bonus
-    - Recherche textuelle
-    - Tâches urgentes (< 2 jours)
-    - Drag & drop (réorganisation)
-    - Statistiques complètes
     """,
     docs_url="/docs",
     redoc_url="/redoc",

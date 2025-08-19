@@ -3,9 +3,6 @@ from sqlalchemy.ext.declarative import declared_attr
 from app.config.database import Base
 
 class BaseModel(Base):
-    """
-    Modèle de base avec des champs communs à tous les modèles
-    """
     __abstract__ = True
     
     id = Column(Integer, primary_key=True, index=True)

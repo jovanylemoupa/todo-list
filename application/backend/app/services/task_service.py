@@ -14,8 +14,6 @@ from app.schemas.common import PaginatedResponse
 from app.core.exceptions import NotFoundException, ValidationException, BusinessLogicException
 
 class TaskService:
-    """Service pour la logique métier des tâches"""
-    
     def __init__(self):
         self.task_repo = task_repository
         self.category_repo = category_repository
@@ -28,7 +26,6 @@ class TaskService:
         page: int = 1,
         size: int = 20
     ) -> PaginatedResponse[TaskResponse]:
-        """Récupérer les tâches avec filtres, tri et pagination"""
         skip = (page - 1) * size
         tasks, total = self.task_repo.get_filtered(db, filters, sort, skip, size)
         
@@ -131,7 +128,6 @@ class TaskService:
         return TaskResponse.from_orm(task_with_category)
 
     def delete_task(self, db: Session, task_id: int) -> bool:
-        """Supprimer une tâche"""
         if not self.task_repo.exists(db, task_id):
             raise NotFoundException(f"Tâche avec l'ID {task_id} introuvable")
         
@@ -149,17 +145,14 @@ class TaskService:
         return TaskResponse.from_orm(task_with_category)
 
     def get_urgent_tasks(self, db: Session) -> List[TaskResponse]:
-        """Récupérer toutes les tâches urgentes"""
         urgent_tasks = self.task_repo.get_urgent_tasks(db)
         return [TaskResponse.from_orm(task) for task in urgent_tasks]
 
     def get_overdue_tasks(self, db: Session) -> List[TaskResponse]:
-        """Récupérer toutes les tâches en retard"""
         overdue_tasks = self.task_repo.get_overdue_tasks(db)
         return [TaskResponse.from_orm(task) for task in overdue_tasks]
 
     def search_tasks(self, db: Session, search_term: str) -> List[TaskResponse]:
-        """Recherche textuelle dans les tâches (bonus)"""
         if len(search_term.strip()) < 2:
             raise ValidationException(
                 "Le terme de recherche doit contenir au moins 2 caractères",
@@ -175,7 +168,6 @@ class TaskService:
         return TaskStatistics(**stats_data)
 
     def reorder_tasks(self, db: Session, bulk_update: TaskBulkUpdate) -> bool:
-        """Réorganiser les tâches via drag & drop (bonus)"""
         # Vérifier que toutes les tâches existent
         for task_id in bulk_update.task_ids:
             if not self.task_repo.exists(db, task_id):

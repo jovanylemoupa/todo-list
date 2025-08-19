@@ -1,6 +1,3 @@
-"""
-Script de lancement de l'application
-"""
 import uvicorn
 from app.config.settings import settings
 

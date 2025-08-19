@@ -5,7 +5,6 @@ from app.models.task import TaskPriority, TaskStatus
 from .category import CategoryResponse
 
 class TaskBase(BaseModel):
-    """Schéma de base pour les tâches avec toutes les validations requises"""
     title: str = Field(
         ..., 
         min_length=3, 
@@ -33,7 +32,6 @@ class TaskBase(BaseModel):
 
     @validator('title')
     def validate_title(cls, v):
-        """Validation stricte du titre selon les contraintes"""
         if not v or not v.strip():
             raise ValueError('Le titre est obligatoire et ne peut pas être vide')
         
@@ -45,7 +43,6 @@ class TaskBase(BaseModel):
 
     @validator('due_date')
     def validate_due_date(cls, v):
-        """Validation de la date d'échéance (doit être future)"""
         if not v:
             raise ValueError('La date d\'échéance est obligatoire')
         
@@ -93,14 +90,13 @@ class TaskUpdate(BaseModel):
             raise ValueError('La date d\'échéance doit être dans le futur')
         return v
 
-# ✅ SOLUTION : TaskResponse n'hérite PAS de TaskBase
 class TaskResponse(BaseModel):
     """Schéma complet pour les réponses contenant une tâche - SANS validation sur due_date"""
     id: int
     title: str
     description: Optional[str] = None
     priority: TaskPriority
-    due_date: datetime  # ✅ PAS de validation ici (lecture seule)
+    due_date: datetime  
     category_id: int
     status: TaskStatus
     created_at: datetime
@@ -122,7 +118,7 @@ class TaskFilter(BaseModel):
     category_id: Optional[int] = Field(None, gt=0)
     priority: Optional[TaskPriority] = None
     status: Optional[TaskStatus] = None
-    search: Optional[str] = Field(None, description="Recherche textuelle")  # ✅ Supprimé min_length
+    search: Optional[str] = Field(None, description="Recherche textuelle") 
     is_urgent: Optional[bool] = None
     is_overdue: Optional[bool] = None
 
