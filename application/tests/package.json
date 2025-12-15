@@ -1,0 +1,25 @@
+{
+  "name": "todo-list-tests",
+  "version": "1.0.0",
+  "description": "Tests pour l'application Todo List (frontend et backend)",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cypress run --config-file cypress.config.js",
+    "test:backend": "jest",
+    "cypress:open": "cypress open --config-file cypress.config.js",
+    "cypress:run": "cypress run --config-file cypress.config.js"
+  },
+  "keywords": [
+    "test",
+    "cypress",
+    "jest"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "cypress": "^15.7.1",
+    "jest": "^30.2.0"
+  }
+}
